@@ -1,1 +1,101 @@
+##apt update
+apt-get -y install lsb-release ca-certificates curl
+curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
+dpkg -i /tmp/debsuryorg-archive-keyring.deb
+sh -c 'echo "deb [signed-by=/usr/share/keyrings/deb.sury.org-php.gpg] https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list'
+apt-get update
+apt install apache2 php8.1-gmp php8.1-curl php8.1-soap php8.1-bcmath php8.1-intl php8.1-mbstring php8.1-xmlrpc php8.1-mysql php8.1-gd php8.1-xml php8.1-cli php8.1-zip
+apt install libapache2-mod-php8.1
+nano /etc/php/8.1/apache2/php.ini
+##Change (memory_limit = 128M) to (memory_limit = 5128M) /#
+apt install mariadb-server
+apt install apt-transport-https ca-certificates gnupg2
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
+sh -c 'echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list'
+apt update && apt install elasticsearch
+nano /etc/elasticsearch/jvm.options.d/my.jvm.options
+# add
+-Xms512m
+-Xmx512m
+/#
+systemctl start elasticsearch
+cd /etc/apache2/sites-enabled/
+nano mage.conf 
+# mage.conf can be any name .conf #
+## add below to .conf; change ServerName##   
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+<VirtualHost *:80>
+    DocumentRoot "/var/www/magento2"
+    ServerName mg12.pawtech.com.au
+
+    <Directory /var/www/magento2>
+       AllowOverride all
+        Require all granted
+    </Directory>
+</VirtualHost>
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+apt install unzip
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+#create mysql database and username /#
+
+mysql
+CREATE DATABASE magento;
+CREATE USER 'linivek'@'localhost' IDENTIFIED BY 'nivek8649';
+GRANT ALL PRIVILEGES ON magento.* TO 'linivek'@'localhost';
+FLUSH PRIVILEGES;
+exit;
+
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+#Upload magento theme to /var/www/ /#
+
+cd /var/www
+unzip -d magento2 *.zip
+cd magento2/
+cd data_quickstart/
+
+#Import the sample data into the database we created/#
+
+mysql -u linivek -p magento < sample_data.sql
+chown -R www-data:www-data magento2/
+cd /var/www/magento2/app/etc/
+nano di.xml
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+replace
+
+<item name="MariaDB-(10.2-10.6)" xsi:type="string">^10\.[2-6]\.</item>
+
+To
+
+<item name="MariaDB-(10.2-10.11)" xsi:type="string">^10\.([2-9]|10|11)\.</item>
+
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+**********************************************************************************
+#Install Composer /#
+php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
+php composer-setup.php --2.2
+php -r "unlink('composer-setup.php');"
+mv composer.phar /usr/local/bin/composer
+nano ~/.config/composer/auth.json
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+{
+    "http-basic": {
+        "repo.magento.com": {
+            "username": "ed20cc72875fb749cc88f4ef6cbab79b",
+            "password": "e13bb4e6dc94aed931905543532edf2b"
+        }
+    }
+}
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+*********************************************
+#install magento/#
+cd /var/www/magento2
+runuser -u www-data -- php bin/magento setup:install --base-url=https://mg12.pawtech.com.au/ --base-url-secure=https://mg12.pawtech.com.au/ --db-host=localhost --db-name=magento --db-user=linivek --db-password=nivek8649 --admin-firstname=admin --admin-lastname=admin --admin-email=admin@pawtech.com.au --admin-user=admin --admin-password=nivek8649 --language=en_US --currency=USD --timezone=America/Chicago --use-rewrites=1 --backend-frontname="admin"      
+
+ runuser -u www-data -- bin/magento module:disable Magento_TwoFactorAuth Magento_AdminAdobeImsTwoFactorAuth
+runuser -u www-data -- bin/magento cron:install
+a2enmod rewrite
+a2enmod ssl
+systemctl restart apache2
+
 
