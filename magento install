@@ -97,5 +97,6 @@ runuser -u www-data -- bin/magento cron:install
 a2enmod rewrite
 a2enmod ssl
 systemctl restart apache2
+test
 
 
