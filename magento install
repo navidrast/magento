@@ -1,17 +1,8 @@
 # Update package lists
 apt update
 
-# Install necessary packages
+# Install necessary packages   
 apt-get -y install lsb-release ca-certificates curl
-
-# Install Node.js
-curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-apt-get -y install nodejs
-
-# Add Yarn repository and install Yarn
-curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
-apt update && apt -y install yarn
 
 # Add DEB.SURY.ORG repository for PHP and Apache2, and install packages
 curl -sSLo /tmp/debsuryorg-archive-keyring.deb https://packages.sury.org/debsuryorg-archive-keyring.deb
@@ -27,10 +18,7 @@ apt-get -y install mariadb-server
 # Additional packages
 apt-get -y install apt-transport-https ca-certificates gnupg2
 
-# Add Elasticsearch repository and install Elasticsearch
-wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
-sh -c 'echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list'
-apt update && apt-get -y install elasticsearch
+
 
 # Install Composer
 php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
@@ -38,6 +26,23 @@ php composer-setup.php --2.2
 php -r "unlink('composer-setup.php');"
 mv composer.phar /usr/local/bin/composer
 
+
+# Add Elasticsearch repository and install Elasticsearch
+wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
+sh -c 'echo "deb https://artifacts.elastic.co/packages/7.x/apt stable main" > /etc/apt/sources.list.d/elastic-7.x.list'
+apt update && apt install elasticsearch
+
+
+
+
+# Install Node.js
+curl -fsSL https://deb.nodesource.com/setup_18.x | bash -
+c
+
+# Add Yarn repository and install Yarn
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+echo "deb https://dl.yarnpkg.com/debian/ stable main" > /etc/apt/sources.list.d/yarn.list
+apt update && apt -y install yarn
 
 nano ~/.config/composer/auth.json
 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
@@ -88,6 +93,7 @@ FLUSH PRIVILEGES;
 exit;
 
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+/usr/share/elasticsearch/bin/elasticsearch-plugin install analysis-phonetic
 systemctl start elasticsearch
 mkdir /var/www/magento2
 cd /var/www/magento2
@@ -127,6 +133,22 @@ systemctl restart apache2
 bin/magento setup:performance:generate-fixtures /var/www/magento2/setup/performance-toolkit/profiles/ce/small.xml
 
 php bin/magento setup:di:compile
+
+composer require creativestyle/magesuite
+composer require smile/elasticsuite 
+
+cd vendor/creativestyle/theme-creativeshop
+yarn 
+NODE_OPTIONS=--openssl-legacy-provider yarn build
+
+# if can not open homepage 
+#run this 
+# rm -rf /var/www/magento2/generated/*
+
+sudo php /var/www/magento2/bin/magento cache:clean
+sudo php /var/www/magento2/bin/magento cache:flush
+sudo php /var/www/magento2/bin/magento setup:di:compile
+
 
 
 
